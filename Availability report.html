@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280, initial-scale=1.0">
+  <title>Weekly Availability Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --color-primary: #007abc;
+      --color-secondary: #171a1f;
+      --color-muted: #565e6d;
+      --color-border: #dee1e6;
+      --color-panel: #f8f9fa;
+      --color-background: #ffffff;
+      --color-category-one: #4472C4;
+      --color-category-two: #ED7D31;
+      --color-category-three: #70AD47;
+      --color-category-four: #5B9BD5;
+      --color-platform-one: #007abc;
+      --color-platform-two: #FC8019;
+      --color-platform-three: #370F6E;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background-color: #f5f7fa;
+      color: var(--color-secondary);
+      display: flex;
+      justify-content: center;
+    }
+
+    main.slides {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding: 32px 0 48px;
+    }
+
+    .slide {
+      width: 1280px;
+      height: 720px;
+      background-color: var(--color-background);
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .top-accent {
+      height: 6px;
+      width: 100%;
+      background-color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 40px;
+      border-bottom: 1px solid #f3f4f6;
+      min-height: 60px;
+      flex-shrink: 0;
+    }
+
+    .logo-placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed var(--color-border);
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-muted);
+      min-width: 120px;
+      min-height: 40px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .logo-placeholder--small {
+      min-width: 100px;
+      min-height: 32px;
+      font-size: 11px;
+    }
+
+    .slide-content {
+      flex: 1;
+      padding: 48px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 24px;
+    }
+
+    .slide-content--title {
+      padding-top: 64px;
+      gap: 32px;
+    }
+
+    .slide-content.layout-split {
+      flex-direction: row;
+      gap: 24px;
+      padding-top: 32px;
+      padding-bottom: 32px;
+    }
+
+    .slide-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-secondary);
+      margin: 0;
+    }
+
+    .title {
+      font-family: "Archivo", sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .title-accent {
+      color: #2c4b89;
+    }
+
+    .title-secondary {
+      font-family: "Archivo", sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .subtitle {
+      font-family: "Archivo", sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--color-muted);
+      margin: 0;
+    }
+
+    .subtitle-platforms {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-secondary);
+    }
+
+    .timeframe {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--color-muted);
+      margin: 0;
+    }
+
+    .timeframe--center,
+    .subtitle--center {
+      text-align: center;
+    }
+
+    .client-logo-placeholder {
+      width: 180px;
+      height: 110px;
+      border: 1px dashed var(--color-border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chart-section,
+    .insights-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-section {
+      width: 48%;
+    }
+
+    .insights-section {
+      width: 52%;
+    }
+
+    .section-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-secondary);
+      margin: 0 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      background-color: var(--color-background);
+      border: 1px solid #eef0f3;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .chart-container--tall {
+      height: 380px;
+    }
+
+    .category-legend,
+    .data-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .data-legend {
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--color-muted);
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background-color: var(--color-border);
+    }
+
+    .category-color-one {
+      background-color: var(--color-category-one);
+    }
+
+    .category-color-two {
+      background-color: var(--color-category-two);
+    }
+
+    .category-color-three {
+      background-color: var(--color-category-three);
+    }
+
+    .category-color-four {
+      background-color: var(--color-category-four);
+    }
+
+    .legend-listing {
+      background-color: rgba(0, 122, 188, 0.8);
+    }
+
+    .legend-availability {
+      background-color: rgba(252, 128, 25, 0.8);
+    }
+
+    .platform-legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .platform-color-one {
+      background-color: var(--color-platform-one);
+    }
+
+    .platform-color-two {
+      background-color: var(--color-platform-two);
+    }
+
+    .platform-color-three {
+      background-color: var(--color-platform-three);
+    }
+
+    .contribution-overview {
+      margin-top: 20px;
+      background-color: var(--color-panel);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e7eaee;
+    }
+
+    .overview-title,
+    .observations-title,
+    .insights-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+
+    .contribution-overview ul,
+    .category-insight ul,
+    .observations ul,
+    .insights ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--color-secondary);
+    }
+
+    .contribution-overview li,
+    .category-insight li,
+    .observations li,
+    .insights li {
+      margin-bottom: 6px;
+    }
+
+    .category-insight {
+      margin-bottom: 18px;
+      border-left: 4px solid var(--color-border);
+      padding-left: 14px;
+    }
+
+    .category-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: "Archivo", sans-serif;
+      color: #ffffff;
+      margin: 0 0 8px;
+    }
+
+    .category-header--one {
+      background-color: var(--color-category-one);
+    }
+
+    .category-header--two {
+      background-color: var(--color-category-two);
+    }
+
+    .category-header--three {
+      background-color: var(--color-category-three);
+    }
+
+    .category-header--four {
+      background-color: var(--color-category-four);
+    }
+
+    .icon {
+      font-size: 14px;
+    }
+
+    .observations {
+      margin-top: 12px;
+      background-color: var(--color-panel);
+      border: 1px solid #e7eaee;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .platform-label {
+      font-weight: 600;
+    }
+
+    .platform-one-text {
+      color: var(--color-platform-one);
+    }
+
+    .platform-two-text {
+      color: var(--color-platform-two);
+    }
+
+    .platform-three-text {
+      color: var(--color-platform-three);
+    }
+
+    .slide-content--regional {
+      padding: 32px 40px;
+      gap: 16px;
+    }
+
+    .subtitle--center {
+      font-size: 16px;
+      color: var(--color-muted);
+    }
+
+    .unified-legend {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      background-color: var(--color-panel);
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #e7eaee;
+    }
+
+    .legend-divider {
+      width: 1px;
+      height: 20px;
+      background-color: var(--color-border);
+    }
+
+    .trend-indicator {
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .trend-up {
+      color: #10b981;
+    }
+
+    .trend-down {
+      color: #ef4444;
+    }
+
+    .trend-flat {
+      color: #9095a0;
+    }
+
+    .platforms-container {
+      display: flex;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .platform-section {
+      flex: 1;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .platform-header {
+      padding: 10px 12px;
+      text-align: center;
+      font-family: "Archivo", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .platform-header--one {
+      background-color: var(--color-platform-one);
+    }
+
+    .platform-header--two {
+      background-color: var(--color-platform-two);
+    }
+
+    .platform-header--three {
+      background-color: var(--color-platform-three);
+    }
+
+    .region-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+
+    .region-table th {
+      background-color: var(--color-panel);
+      padding: 6px 4px;
+      font-weight: 600;
+      color: var(--color-secondary);
+      border-bottom: 1px solid var(--color-border);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .region-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid #f3f4f6;
+      text-align: center;
+      position: relative;
+    }
+
+    .region-name {
+      text-align: left;
+      padding-left: 12px !important;
+      font-weight: 600;
+      width: 72px;
+    }
+
+    .cell-value {
+      font-weight: 600;
+      position: relative;
+    }
+
+    .avg-column {
+      background-color: var(--color-panel);
+      font-weight: 700;
+    }
+
+    .value-critical {
+      color: #ef4444;
+    }
+
+    .value-warning {
+      color: #f59e0b;
+    }
+
+    .value-good {
+      color: #10b981;
+    }
+
+    .kpi-critical {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #ef4444;
+    }
+
+    .insights {
+      border-top: 1px solid var(--color-border);
+      padding-top: 12px;
+    }
+
+    .platform-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--color-panel);
+      border: 1px solid #e7eaee;
+      border-radius: 8px;
+      padding: 10px 16px;
+    }
+
+    .legend-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--color-muted);
+    }
+
+    .city-tables {
+      display: flex;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .scrollable-table-container {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .city-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .city-table th {
+      background-color: var(--color-panel);
+      padding: 6px;
+      border-bottom: 1px solid var(--color-border);
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-muted);
+    }
+
+    .city-table td {
+      padding: 6px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .region-heading td {
+      background-color: #f0f4f8;
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .city-name {
+      font-weight: 600;
+      color: var(--color-secondary);
+      font-size: 12px;
+    }
+
+    .availability {
+      font-weight: 600;
+      text-align: right;
+      width: 60px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+    }
+
+    .status-badge--critical {
+      background-color: #e53e3e;
+    }
+
+    .status-badge--warning {
+      background-color: #ed8936;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #f3f4f6;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 100%;
+      border-radius: 3px;
+      opacity: 0.25;
+    }
+
+    .progress-bar--platform-one {
+      background-color: var(--color-platform-one);
+    }
+
+    .progress-bar--platform-two {
+      background-color: var(--color-platform-two);
+    }
+
+    .progress-bar--platform-three {
+      background-color: var(--color-platform-three);
+    }
+
+    ul {
+      list-style: disc;
+    }
+
+    ul li:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="slides">
+    <!-- SLIDE 1: Title -->
+    <section class="slide">
+      <div class="top-accent"></div>
+      <div class="header-bar">
+        <div></div>
+        <div class="logo-placeholder">&lt;LOGO&gt;</div>
+      </div>
+      <div class="slide-content slide-content--title">
+        <div class="client-logo-placeholder">&lt;BRAND MARK&gt;</div>
+        <h1 class="title">&lt;BRAND NAME&gt; <span class="title-accent">&lt;REPORT TITLE&gt;</span></h1>
+        <p class="title-secondary">&lt;ANALYSIS TITLE&gt;</p>
+        <p class="subtitle subtitle-platforms">&lt;PLATFORM 1&gt; &lt;PLATFORM 2&gt; &lt;PLATFORM 3&gt;</p>
+        <p class="timeframe">Timeframe – &lt;MONTH YYYY&gt;</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Executive Summary -->
+    <section class="slide">
+      <div class="top-accent"></div>
+      <div class="header-bar">
+        <h2 class="slide-title">Executive Summary</h2>
+        <div class="logo-placeholder logo-placeholder--small">&lt;LOGO&gt;</div>
+      </div>
+      <div class="slide-content layout-split">
+        <div class="chart-section">
+          <h3 class="section-title">&lt;SECTION TITLE 1&gt;</h3>
+          <div class="chart-container">
+            <canvas id="summaryCategoryChart"></canvas>
+          </div>
+          <div class="category-legend">
+            <div class="legend-item">
+              <span class="legend-color category-color-one"></span>
+              <span>&lt;CATEGORY 1&gt;</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color category-color-two"></span>
+              <span>&lt;CATEGORY 2&gt;</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color category-color-three"></span>
+              <span>&lt;CATEGORY 3&gt;</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color category-color-four"></span>
+              <span>&lt;CATEGORY 4&gt;</span>
+            </div>
+          </div>
+          <div class="contribution-overview">
+            <h4 class="overview-title">&lt;OVERVIEW TITLE&gt;</h4>
+            <ul>
+              <li>&lt;INSIGHT 1&gt;</li>
+              <li>&lt;INSIGHT 2&gt;</li>
+              <li>&lt;INSIGHT 3&gt;</li>
+            </ul>
+          </div>
+        </div>
+        <div class="insights-section">
+          <h3 class="section-title">&lt;SECTION TITLE 2&gt;</h3>
+          <div class="category-insight">
+            <h4 class="category-header category-header--one"><i class="fas fa-chart-pie icon"></i><span>&lt;CATEGORY 1&gt;</span></h4>
+            <ul>
+              <li>&lt;INSIGHT 4&gt;</li>
+              <li>&lt;INSIGHT 5&gt;</li>
+              <li>&lt;INSIGHT 6&gt;</li>
+            </ul>
+          </div>
+          <div class="category-insight">
+            <h4 class="category-header category-header--two"><i class="fas fa-cookie icon"></i><span>&lt;CATEGORY 2&gt;</span></h4>
+            <ul>
+              <li>&lt;INSIGHT 7&gt;</li>
+              <li>&lt;INSIGHT 8&gt;</li>
+              <li>&lt;INSIGHT 9&gt;</li>
+            </ul>
+          </div>
+          <div class="category-insight">
+            <h4 class="category-header category-header--three"><i class="fas fa-hamburger icon"></i><span>&lt;CATEGORY 3&gt;</span></h4>
+            <ul>
+              <li>&lt;INSIGHT 10&gt;</li>
+              <li>&lt;INSIGHT 11&gt;</li>
+              <li>&lt;INSIGHT 12&gt;</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Pack Size Analysis -->
+    <section class="slide">
+      <div class="top-accent"></div>
+      <div class="header-bar">
+        <h2 class="slide-title">Pack Size Analysis</h2>
+        <div class="logo-placeholder logo-placeholder--small">&lt;LOGO&gt;</div>
+      </div>
+      <div class="slide-content">
+        <h3 class="section-title">&lt;TIMEFRAME&gt; Listing &amp; Availability Across Platforms</h3>
+        <div class="data-legend">
+          <div class="legend-item">
+            <span class="legend-color legend-listing"></span>
+            <span>&lt;METRIC 1&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color legend-availability"></span>
+            <span>&lt;METRIC 2&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-label platform-one-text">&lt;PLATFORM 1&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-label platform-two-text">&lt;PLATFORM 2&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-label platform-three-text">&lt;PLATFORM 3&gt;</span>
+          </div>
+        </div>
+        <div class="chart-container chart-container--tall">
+          <canvas id="packSizeChart"></canvas>
+        </div>
+        <div class="observations">
+          <h4 class="observations-title">&lt;KEY OBSERVATIONS&gt;</h4>
+          <ul>
+            <li>&lt;OBSERVATION 1&gt;</li>
+            <li>&lt;OBSERVATION 2&gt;</li>
+            <li>&lt;OBSERVATION 3&gt;</li>
+            <li>&lt;OBSERVATION 4&gt;</li>
+            <li>&lt;OBSERVATION 5&gt;</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Regional Performance -->
+    <section class="slide">
+      <div class="top-accent"></div>
+      <div class="header-bar">
+        <h2 class="slide-title">Regional Performance</h2>
+        <div class="logo-placeholder logo-placeholder--small">&lt;LOGO&gt;</div>
+      </div>
+      <div class="slide-content slide-content--regional">
+        <p class="timeframe timeframe--center">&lt;DATE RANGE&gt;</p>
+        <p class="subtitle subtitle--center">&lt;SUMMARY STATEMENT&gt;</p>
+        <div class="unified-legend">
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-one"></span>
+            <span>&lt;PLATFORM 1&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-two"></span>
+            <span>&lt;PLATFORM 2&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-three"></span>
+            <span>&lt;PLATFORM 3&gt;</span>
+          </div>
+          <div class="legend-divider"></div>
+          <div class="legend-item">
+            <i class="fas fa-arrow-up trend-up"></i>
+            <span>&lt;TREND LABEL 1&gt;</span>
+          </div>
+          <div class="legend-item">
+            <i class="fas fa-arrow-down trend-down"></i>
+            <span>&lt;TREND LABEL 2&gt;</span>
+          </div>
+          <div class="legend-item">
+            <i class="fas fa-minus trend-flat"></i>
+            <span>&lt;TREND LABEL 3&gt;</span>
+          </div>
+        </div>
+        <div class="platforms-container">
+          <div class="platform-section">
+            <div class="platform-header platform-header--one">&lt;PLATFORM 1&gt;</div>
+            <table class="region-table">
+              <thead>
+                <tr>
+                  <th class="region-name">Region</th>
+                  <th>&lt;DATE 1&gt;</th>
+                  <th>&lt;DATE 2&gt;</th>
+                  <th>&lt;DATE 3&gt;</th>
+                  <th>&lt;DATE 4&gt;</th>
+                  <th>&lt;DATE 5&gt;</th>
+                  <th>&lt;DATE 6&gt;</th>
+                  <th>&lt;DATE 7&gt;</th>
+                  <th>&lt;AVERAGE&gt;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="region-name">North</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">Central</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">West</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">South</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column value-good">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">East</td>
+                  <td class="cell-value">&lt;VALUE&gt;<span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value avg-column value-critical">&lt;VALUE&gt;</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="platform-section">
+            <div class="platform-header platform-header--two">&lt;PLATFORM 2&gt;</div>
+            <table class="region-table">
+              <thead>
+                <tr>
+                  <th class="region-name">Region</th>
+                  <th>&lt;DATE 1&gt;</th>
+                  <th>&lt;DATE 2&gt;</th>
+                  <th>&lt;DATE 3&gt;</th>
+                  <th>&lt;DATE 4&gt;</th>
+                  <th>&lt;DATE 5&gt;</th>
+                  <th>&lt;DATE 6&gt;</th>
+                  <th>&lt;DATE 7&gt;</th>
+                  <th>&lt;AVERAGE&gt;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="region-name">North</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">Central</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">West</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value value-warning">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value value-warning">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value avg-column value-warning">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">South</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">East</td>
+                  <td class="cell-value value-warning">&lt;VALUE&gt;</td>
+                  <td class="cell-value value-warning">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value value-good">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value value-good">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value value-good">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value value-good">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value value-warning">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="platform-section">
+            <div class="platform-header platform-header--three">&lt;PLATFORM 3&gt;</div>
+            <table class="region-table">
+              <thead>
+                <tr>
+                  <th class="region-name">Region</th>
+                  <th>&lt;DATE 1&gt;</th>
+                  <th>&lt;DATE 2&gt;</th>
+                  <th>&lt;DATE 3&gt;</th>
+                  <th>&lt;DATE 4&gt;</th>
+                  <th>&lt;DATE 5&gt;</th>
+                  <th>&lt;DATE 6&gt;</th>
+                  <th>&lt;DATE 7&gt;</th>
+                  <th>&lt;AVERAGE&gt;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="region-name">North</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value avg-column value-good">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">Central</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value avg-column value-good">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">West</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">South</td>
+                  <td class="cell-value">&lt;VALUE&gt;</td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-up trend-up"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value">&lt;VALUE&gt; <i class="fas fa-arrow-down trend-down"></i></td>
+                  <td class="cell-value avg-column">&lt;VALUE&gt;</td>
+                </tr>
+                <tr>
+                  <td class="region-name">East</td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt;<span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value value-critical">&lt;VALUE&gt; <i class="fas fa-minus trend-flat"></i><span class="kpi-critical"></span></td>
+                  <td class="cell-value avg-column value-critical">&lt;VALUE&gt;</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="insights">
+          <h4 class="insights-title">&lt;KEY OBSERVATIONS&gt;</h4>
+          <ul>
+            <li>&lt;INSIGHT 13&gt;</li>
+            <li>&lt;INSIGHT 14&gt;</li>
+            <li>&lt;INSIGHT 15&gt;</li>
+            <li>&lt;INSIGHT 16&gt;</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: City-Level Availability -->
+    <section class="slide">
+      <div class="top-accent"></div>
+      <div class="header-bar">
+        <h2 class="slide-title">City-Level Availability</h2>
+        <div class="logo-placeholder logo-placeholder--small">&lt;LOGO&gt;</div>
+      </div>
+      <div class="slide-content">
+        <div class="platform-legend">
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-one"></span>
+            <span>&lt;PLATFORM 1&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-two"></span>
+            <span>&lt;PLATFORM 2&gt;</span>
+          </div>
+          <div class="legend-item">
+            <span class="platform-legend-color platform-color-three"></span>
+            <span>&lt;PLATFORM 3&gt;</span>
+          </div>
+          <div class="legend-note">
+            <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span>
+            <span>&lt;THRESHOLD 1&gt;</span>
+          </div>
+          <div class="legend-note">
+            <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span>
+            <span>&lt;THRESHOLD 2&gt;</span>
+          </div>
+        </div>
+        <h3 class="section-title">&lt;SECTION TITLE&gt;</h3>
+        <div class="city-tables">
+          <div class="platform-section">
+            <div class="platform-header platform-header--one">&lt;PLATFORM 1&gt;</div>
+            <div class="scrollable-table-container">
+              <table class="city-table">
+                <thead>
+                  <tr>
+                    <th width="40%">Location / City</th>
+                    <th width="20%">Availability</th>
+                    <th>Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-one"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="platform-section">
+            <div class="platform-header platform-header--two">&lt;PLATFORM 2&gt;</div>
+            <div class="scrollable-table-container">
+              <table class="city-table">
+                <thead>
+                  <tr>
+                    <th width="40%">Location / City</th>
+                    <th width="20%">Availability</th>
+                    <th>Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt;</div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-two"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="platform-section">
+            <div class="platform-header platform-header--three">&lt;PLATFORM 3&gt;</div>
+            <div class="scrollable-table-container">
+              <table class="city-table">
+                <thead>
+                  <tr>
+                    <th width="40%">Location / City</th>
+                    <th width="20%">Availability</th>
+                    <th>Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--warning">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-three"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="region-heading">
+                    <td colspan="3">&lt;Region&gt;</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-three"></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="city-name">&lt;CITY&gt; <span class="status-badge status-badge--critical">&lt;STATUS&gt;</span></div>
+                    </td>
+                    <td class="availability">&lt;AVAILABILITY %&gt;</td>
+                    <td>
+                      <div class="progress-container">
+                        <div class="progress-bar progress-bar--platform-three"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="insights">
+          <h4 class="insights-title">&lt;KEY OBSERVATIONS&gt;</h4>
+          <ul>
+            <li>&lt;INSIGHT 17&gt;</li>
+            <li>&lt;INSIGHT 18&gt;</li>
+            <li>&lt;INSIGHT 19&gt;</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
